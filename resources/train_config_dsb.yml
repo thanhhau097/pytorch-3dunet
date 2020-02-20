@@ -24,6 +24,8 @@ loss:
   skip_last_target: true
 eval_metric:
   name: BlobsAveragePrecision
+  use_last_target: true
+  metric: 'ap'
 lr_scheduler:
   name: ReduceLROnPlateau
   mode: max

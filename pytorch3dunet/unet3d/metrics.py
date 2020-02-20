@@ -143,7 +143,7 @@ class AdaptedRandError:
         """
         # converts input and target to numpy arrays
         input, target = convert_to_numpy(input, target)
-        if not self.use_last_target:
+        if self.use_last_target:
             target = target[:, -1, ...]  # 4D
         else:
             # use 1st target channel
@@ -206,7 +206,7 @@ class BoundaryAdaptedRandError(AdaptedRandError):
         if self.use_first_input:
             input = np.expand_dims(input[0], axis=0)
 
-        segms = []
+        segs = []
         for predictions in input:
             for th in self.thresholds:
                 # threshold probability maps
@@ -219,10 +219,10 @@ class BoundaryAdaptedRandError(AdaptedRandError):
 
                 predictions = predictions.astype(np.uint8)
                 # run connected components on the predicted mask; consider only 1-connectivity
-                segm = measure.label(predictions, background=0, connectivity=1)
-                segms.append(segm)
+                seg = measure.label(predictions, background=0, connectivity=1)
+                segs.append(seg)
 
-        return np.stack(segms)
+        return np.stack(segs)
 
 
 class GenericAdaptedRandError(AdaptedRandError):
@@ -252,15 +252,14 @@ class GenericAdaptedRandError(AdaptedRandError):
 
         input = np.stack(results)
 
-        segms = []
+        segs = []
         for predictions in input:
             for th in self.thresholds:
-                predictions = (predictions > th).astype(np.uint8)
                 # run connected components on the predicted mask; consider only 1-connectivity
-                segm = measure.label(predictions, background=0, connectivity=1)
-                segms.append(segm)
+                seg = measure.label((predictions > th).astype(np.uint8), background=0, connectivity=1)
+                segs.append(seg)
 
-        return np.stack(segms)
+        return np.stack(segs)
 
 
 class EmbeddingsAdaptedRandError(AdaptedRandError):
@@ -333,7 +332,7 @@ class GenericAveragePrecision:
         assert target.dim() == 5
 
         input, target = convert_to_numpy(input, target)
-        if not self.use_last_target:
+        if self.use_last_target:
             target = target[:, -1, ...]  # 4D
         else:
             # use 1st target channel
@@ -342,18 +341,18 @@ class GenericAveragePrecision:
         batch_aps = []
         # iterate over the batch
         for inp, tar in zip(input, target):
-            channel_seg = self.input_to_seg(inp)  # 4D
+            segs = self.input_to_seg(inp)  # 4D
             # convert target to seg
             tar = self.target_to_seg(tar)
             # filter small instances if necessary
             tar = self._filter_instances(tar)
 
             # compute average precision per channel
-            channel_aps = [self.metric(self._filter_instances(seg), tar) for seg in channel_seg]
+            segs_aps = [self.metric(self._filter_instances(seg), tar) for seg in segs]
 
-            logger.info(f'Max Average Precision for channel: {np.argmax(channel_aps)}')
+            logger.info(f'Max Average Precision for channel: {np.argmax(segs_aps)}')
             # save max AP
-            batch_aps.append(np.max(channel_aps))
+            batch_aps.append(np.max(segs_aps))
 
         return torch.tensor(batch_aps).mean()
 
@@ -392,13 +391,13 @@ class BlobsAveragePrecision(GenericAveragePrecision):
     def input_to_seg(self, input):
         # get 1st channel
         input = input[0]
-        segm = []
+        segs = []
         for th in self.thresholds:
             # threshold and run connected components
-            input = (input > th).astype(np.uint8)
-            seg = measure.label(input, background=0, connectivity=1)
-            segm.append(seg)
-        return np.stack(segm)
+            mask = (input > th).astype(np.uint8)
+            seg = measure.label(mask, background=0, connectivity=1)
+            segs.append(seg)
+        return np.stack(segs)
 
 
 class BoundaryAveragePrecision(GenericAveragePrecision):
@@ -417,12 +416,11 @@ class BoundaryAveragePrecision(GenericAveragePrecision):
     def input_to_seg(self, input):
         # get 1st channel only
         input = input[0]
-        segm = []
+        segs = []
         for th in self.thresholds:
-            input = np.logical_not(input > th).astype(np.uint8)
-            seg = measure.label(input, background=0, connectivity=1)
-            segm.append(seg)
-        return np.stack(segm)
+            seg = measure.label(np.logical_not(input > th).astype(np.uint8), background=0, connectivity=1)
+            segs.append(seg)
+        return np.stack(segs)
 
 
 class PSNR:

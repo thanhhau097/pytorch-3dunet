@@ -212,7 +212,7 @@ class CropToFixed:
 
         def _start_and_pad(crop_size, max_size):
             if crop_size < max_size:
-                (max_size - crop_size) // 2, (0, 0)
+                return (max_size - crop_size) // 2, (0, 0)
             else:
                 return 0, _padding(crop_size - max_size)
 
