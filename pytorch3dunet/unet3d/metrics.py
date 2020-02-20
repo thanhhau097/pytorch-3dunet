@@ -10,7 +10,7 @@ from skimage.metrics import adapted_rand_error, peak_signal_noise_ratio
 from sklearn.cluster import MeanShift
 
 from pytorch3dunet.unet3d.losses import compute_per_channel_dice
-from pytorch3dunet.unet3d.seg_metrics import AveragePrecision
+from pytorch3dunet.unet3d.seg_metrics import AveragePrecision, Accuracy
 from pytorch3dunet.unet3d.utils import get_logger, expand_as_one_hot, plot_segm, convert_to_numpy
 
 logger = get_logger('EvalMetric')
@@ -316,9 +316,16 @@ class EmbeddingsMeanShiftAdaptedRandError(AdaptedRandError):
 
 
 class GenericAveragePrecision:
-    def __init__(self, min_instance_size=None, use_last_target=False, **kwargs):
+    def __init__(self, min_instance_size=None, use_last_target=False, metric='ap', **kwargs):
         self.min_instance_size = min_instance_size
         self.use_last_target = use_last_target
+        assert metric in ['ap', 'acc']
+        if metric == 'ap':
+            # use AveragePrecision
+            self.metric = AveragePrecision()
+        else:
+            # use Accuracy at 0.5 IoU
+            self.metric = Accuracy(iou_threshold=0.5)
 
     def __call__(self, input, target):
         assert isinstance(input, torch.Tensor) and isinstance(target, torch.Tensor)
@@ -341,10 +348,8 @@ class GenericAveragePrecision:
             # filter small instances if necessary
             tar = self._filter_instances(tar)
 
-            # create average precision functor
-            ap = AveragePrecision()
             # compute average precision per channel
-            channel_aps = [ap(self._filter_instances(seg), tar) for seg in channel_seg]
+            channel_aps = [self.metric(self._filter_instances(seg), tar) for seg in channel_seg]
 
             logger.info(f'Max Average Precision for channel: {np.argmax(channel_aps)}')
             # save max AP
