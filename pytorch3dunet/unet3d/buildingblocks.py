@@ -4,6 +4,10 @@ import torch
 from torch import nn as nn
 from torch.nn import functional as F
 
+try:
+    from .sync_batchnorm import SynchronizedBatchNorm3d
+except:
+    pass
 
 def conv3d(in_channels, out_channels, kernel_size, bias, padding=1):
     return nn.Conv3d(in_channels, out_channels, kernel_size, padding=padding, bias=bias)
@@ -61,9 +65,9 @@ def create_conv(in_channels, out_channels, kernel_size, order, num_groups, paddi
         elif char == 'b':
             is_before_conv = i < order.index('c')
             if is_before_conv:
-                modules.append(('batchnorm', nn.BatchNorm3d(in_channels)))
+                modules.append(('batchnorm', SynchronizedBatchNorm3d(in_channels)))
             else:
-                modules.append(('batchnorm', nn.BatchNorm3d(out_channels)))
+                modules.append(('batchnorm', SynchronizedBatchNorm3d(out_channels)))
         else:
             raise ValueError(f"Unsupported layer type '{char}'. MUST be one of ['b', 'g', 'r', 'l', 'e', 'c']")
 
