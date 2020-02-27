@@ -124,7 +124,7 @@ def split_data(root, train_file, val_file):
 def main():
     # TODO split dataset for training
     root = '../../data/2018/MICCAI_BraTS_2018_Data_Training'
-    read_data(root)
+    # read_data(root)
     split_data(os.path.join(root, 'h5'), os.path.join(root, 'train_0.txt'), os.path.join(root, 'valid_0.txt'))
     # list_files('2018/MICCAI_BraTS_2018_Data_Training')
     # list_files('2018/MICCAI_BraTS_2018_Data_Validation', kind='val', output='val.txt')
