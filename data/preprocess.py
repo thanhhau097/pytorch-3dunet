@@ -92,7 +92,7 @@ def list_files(root, kind='train', output='all.txt'):
 
 
 def main():
-    root = './2018/MICCAI_BraTS_2018_Data_Training'
+    root = '../../data/2018/MICCAI_BraTS_2018_Data_Training'
     read_data(root)
     # list_files('2018/MICCAI_BraTS_2018_Data_Training')
     # list_files('2018/MICCAI_BraTS_2018_Data_Validation', kind='val', output='val.txt')
