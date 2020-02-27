@@ -20,6 +20,8 @@ def compute_per_channel_dice(input, target, epsilon=1e-6, weight=None):
          weight (torch.Tensor): Cx1 tensor of weight per channel/class
     """
 
+    if input.size() == target.size():  # -> convert to onehot
+        target = expand_target(target, n_class=input.size()[1])
     # input and target shapes must match
     assert input.size() == target.size(), "'input' and 'target' must have the same shape"
 
@@ -127,6 +129,30 @@ class DiceLoss(_AbstractDiceLoss):
         return compute_per_channel_dice(input, target, weight=self.weight)
 
 
+# for BRATS
+def expand_target(x, n_class, mode='softmax'):
+    """
+        Converts NxDxHxW label image to NxCxDxHxW, where each label is stored in a separate channel
+        :param input: 4D input image (NxDxHxW)
+        :param C: number of channels/labels
+        :return: 5D output image (NxCxDxHxW)
+        """
+    assert x.dim() == 4
+    shape = list(x.size())
+    shape.insert(1, n_class)
+    shape = tuple(shape)
+    xx = torch.zeros(shape)
+    if mode.lower() == 'softmax':
+        xx[:, 1, :, :, :] = (x == 1)
+        xx[:, 2, :, :, :] = (x == 2)
+        xx[:, 3, :, :, :] = (x == 3)
+    if mode.lower() == 'sigmoid':
+        xx[:, 0, :, :, :] = (x == 1)
+        xx[:, 1, :, :, :] = (x == 2)
+        xx[:, 2, :, :, :] = (x == 3)
+    return xx.to(x.device)
+
+
 class GeneralizedDiceLoss(_AbstractDiceLoss):
     """Computes Generalized Dice Loss (GDL) as described in https://arxiv.org/pdf/1707.03237.pdf.
     """
@@ -136,6 +162,8 @@ class GeneralizedDiceLoss(_AbstractDiceLoss):
         self.epsilon = epsilon
 
     def dice(self, input, target, weight):
+        if input.size() == target.size():  # -> convert to onehot
+            target = expand_target(target, n_class=input.size()[1])
         assert input.size() == target.size(), "'input' and 'target' must have the same shape"
 
         input = flatten(input)
