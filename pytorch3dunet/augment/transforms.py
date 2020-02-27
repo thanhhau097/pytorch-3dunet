@@ -724,8 +724,11 @@ import collections
 #         return 'Identity()'
 
 
+# TODO: change the random state here, because raw and label must match
 class RandomIntensityChange(object):
-    def __init__(self, factor=(0.1, 0.1), **kwargs):
+    def __init__(self, random_state, factor=(0.1, 0.1), **kwargs):
+        assert random_state is not None, 'RandomState cannot be None'
+        self.random_state = random_state
         shift, scale = factor
         assert (shift > 0) and (scale > 0)
         self.shift = shift
@@ -735,10 +738,11 @@ class RandomIntensityChange(object):
         if k == 1:
             return img
 
-        shift_factor = np.random.uniform(-self.shift, self.shift,
-                                         size=[1, img.shape[1], 1, 1, img.shape[4]])  # [-0.1,+0.1]
-        scale_factor = np.random.uniform(1.0 - self.scale, 1.0 + self.scale,
-                                         size=[1, img.shape[1], 1, 1, img.shape[4]])  # [0.9,1.1)
+        # print(img.shape)
+        shift_factor = self.random_state.uniform(-self.shift, self.shift,
+                                         size=[img.shape[0], 1, 1, img.shape[3]])  # [-0.1,+0.1]
+        scale_factor = self.random_state.uniform(1.0 - self.scale, 1.0 + self.scale,
+                                         size=[img.shape[0], 1, 1, img.shape[3]])  # [0.9,1.1)
         # shift_factor = np.random.uniform(-self.shift,self.shift,size=[1,1,1,img.shape[3],img.shape[4]]) # [-0.1,+0.1]
         # scale_factor = np.random.uniform(1.0 - self.scale, 1.0 + self.scale,size=[1,1,1,img.shape[3],img.shape[4]]) # [0.9,1.1)
         return img * scale_factor + shift_factor

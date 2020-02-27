@@ -84,7 +84,7 @@ loaders:
     # absolute paths to the training datasets; if a given path is a directory all H5 files ('*.h5', '*.hdf', '*.hdf5', '*.hd5')
     # inside this this directory will be included as well (non-recursively)
     file_paths:
-      - '../data/2018/MICCAI_BraTS_2018_Data_Training/h5/train/'
+      - '../../data/2018/MICCAI_BraTS_2018_Data_Training/h5/train/'
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
     slice_builder:
@@ -120,13 +120,13 @@ loaders:
 #        # apply additive Poisson noise
 #        - name: AdditivePoissonNoise
 #        # convert to torch tensor
-        - name: RandomIntensityChange
+#        - name: RandomIntensityChange
         - name: ToTensor
           # add additional 'channel' axis when the input data is 3D
           expand_dims: true
       label:
         - name: RandomFlip
-        - name: RandomRotate90
+#        - name: RandomRotate90
         - name: RandomRotate
           # rotate only in ZY only since most volumetric data is anisotropic
           axes: [[2, 1]]
@@ -134,6 +134,7 @@ loaders:
           mode: reflect
 #        - name: ElasticDeformation
 #          spline_order: 0
+#        - name: RandomIntensityChange
         - name: ToTensor
           # do not expand dims for cross-entropy loss
           expand_dims: false
@@ -145,7 +146,7 @@ loaders:
     # paths to the validation datasets; if a given path is a directory all H5 files ('*.h5', '*.hdf', '*.hdf5', '*.hd5')
     # inside this this directory will be included as well (non-recursively)
     file_paths:
-      - '../data/2018/MICCAI_BraTS_2018_Data_Training/h5/val/'
+      - '../../data/2018/MICCAI_BraTS_2018_Data_Training/h5/val/'
 
     # SliceBuilder configuration
     slice_builder:
@@ -159,7 +160,7 @@ loaders:
     # no data augmentation during validation
     transformer:
       raw:
-        - name: Standardize
+#        - name: Standardize
         - name: ToTensor
           expand_dims: true
       label:

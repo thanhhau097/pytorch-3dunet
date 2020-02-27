@@ -153,6 +153,7 @@ def expand_target(x, n_class, mode='softmax'):
     return xx.to(x.device)
 
 
+# TODO: https://github.com/China-LiuXiaopeng/BraTS-DMFNet/issues/2
 class GeneralizedDiceLoss(_AbstractDiceLoss):
     """Computes Generalized Dice Loss (GDL) as described in https://arxiv.org/pdf/1707.03237.pdf.
     """
