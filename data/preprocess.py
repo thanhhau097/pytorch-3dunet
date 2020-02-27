@@ -30,9 +30,15 @@ def read_sub_type(root, image_type='HGG'):
         label = nib.load(os.path.join(root, image_type, filename, filename + label_tail)).get_data().astype(np.uint8)
         label[label == 4] = 3
 
-        folder = os.path.join(root, 'h5', image_type)
+        folder = os.path.join(root, 'h5', 'all')
+        train_folder = os.path.join(root, 'h5', 'train')
+        val_folder = os.path.join(root, 'h5', 'val')
         if not os.path.exists(folder):
             os.makedirs(folder)
+        if not os.path.exists(train_folder):
+            os.makedirs(train_folder)
+        if not os.path.exists(val_folder):
+            os.makedirs(val_folder)
 
         save_to_h5(os.path.join(folder, filename + '.h5'), raw, label)
 
@@ -75,26 +81,39 @@ def read_data(root):
     for image_type in ['HGG', 'LGG']:
         read_sub_type(root, image_type)
 
+def split_data(root, train_file, val_file):
+    with open(train_file, 'r') as f:
+        train_list = f.readlines()
+        temp = [name[:-1].split('/')[1] for name in train_list[:-1]]
+        train_list = temp + [train_list[-1].split('/')[1]]
 
-def list_files(root, kind='train', output='all.txt'):
-    files = []
-    if kind == 'train':
-        subs = ['HGG', 'LGG']
-        for sub in subs:
-            files += [os.path.join(sub, file) for file in os.listdir(os.path.join(root, sub))]
-    else:
-        files = [file for file in os.listdir(root)]
+    with open(val_file, 'r') as f:
+        val_list = f.readlines()
+        temp = [name[:-1].split('/')[1] for name in val_list]
+        val_list = temp + [val_list[-1].split('/')[1]]
 
-    with open(os.path.join(root, output), 'w') as f:
-        for file in files:
-            f.write(file)
-            f.write('\n')
+    # move file from all folder to train and val_folder
+    all_folder = os.path.join(root, 'all')
+    train_folder = os.path.join(root, 'train')
+    val_folder = os.path.join(root, 'val')
+    # 1: move from train/val to all if there is existed
+    for name in os.listdir(train_folder):
+        os.rename(os.path.join(train_folder, name), os.path.join(all_folder, name))
+    for name in os.listdir(val_folder):
+        os.rename(os.path.join(val_folder, name), os.path.join(all_folder, name))
+
+    # 2: move from all to train and val
+    for name in train_list:
+        os.rename(os.path.join(all_folder, name), os.path.join(train_folder, name))
+    for name in val_list:
+        os.rename(os.path.join(all_folder, name), os.path.join(val_folder, name))
 
 
 def main():
     # TODO split dataset for training
     root = '../../data/2018/MICCAI_BraTS_2018_Data_Training'
     read_data(root)
+    split_data(os.path.join(root, 'h5'), os.path.join(root, 'train_0.txt'), os.path.join(root, 'valid_0.txt'))
     # list_files('2018/MICCAI_BraTS_2018_Data_Training')
     # list_files('2018/MICCAI_BraTS_2018_Data_Validation', kind='val', output='val.txt')
 

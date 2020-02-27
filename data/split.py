@@ -41,4 +41,3 @@ for k, (train_index, valid_index) in enumerate(skf.split(Y, Y)):
 valid = os.listdir(os.path.join(valid_data_dir))
 valid = [f for f in valid if not (f.endswith('.csv') or f.endswith('.txt'))]
 write(valid, 'valid.txt', root=valid_data_dir)
-
