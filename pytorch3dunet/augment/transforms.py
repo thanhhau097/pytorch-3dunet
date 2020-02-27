@@ -691,3 +691,57 @@ def _recover_ignore_index(input, orig, ignore_index):
         input[mask] = ignore_index
 
     return input
+
+
+# BRATS
+import collections
+
+
+# class Base(object):
+#     def sample(self, *shape):
+#         return shape
+#
+#     def tf(self, img, k=0):
+#         return img
+#
+#     def __call__(self, img, dim=3, reuse=False): # class -> func()
+#         # image: nhwtc
+#         # shape: no first dim
+#         if not reuse:
+#             im = img if isinstance(img, np.ndarray) else img[0]
+#             # how to know  if the last dim is channel??
+#             # nhwtc vs nhwt??
+#             shape = im.shape[1:dim+1]
+#             # print(dim,shape) # 3, (240,240,155)
+#             self.sample(*shape)
+#
+#         if isinstance(img, collections.Sequence):
+#             return [self.tf(x, k) for k, x in enumerate(img)] # img:k=0,label:k=1
+#
+#         return self.tf(img)
+#
+#     def __str__(self):
+#         return 'Identity()'
+
+
+class RandomIntensityChange(object):
+    def __init__(self, factor=(0.1, 0.1), **kwargs):
+        shift, scale = factor
+        assert (shift > 0) and (scale > 0)
+        self.shift = shift
+        self.scale = scale
+
+    def __call__(self, img, k=0):
+        if k == 1:
+            return img
+
+        shift_factor = np.random.uniform(-self.shift, self.shift,
+                                         size=[1, img.shape[1], 1, 1, img.shape[4]])  # [-0.1,+0.1]
+        scale_factor = np.random.uniform(1.0 - self.scale, 1.0 + self.scale,
+                                         size=[1, img.shape[1], 1, 1, img.shape[4]])  # [0.9,1.1)
+        # shift_factor = np.random.uniform(-self.shift,self.shift,size=[1,1,1,img.shape[3],img.shape[4]]) # [-0.1,+0.1]
+        # scale_factor = np.random.uniform(1.0 - self.scale, 1.0 + self.scale,size=[1,1,1,img.shape[3],img.shape[4]]) # [0.9,1.1)
+        return img * scale_factor + shift_factor
+
+    def __str__(self):
+        return 'random intensity shift per channels on the input image, including'
