@@ -106,14 +106,18 @@ def split_data(root, train_file, val_file):
     val_folder = os.path.join(root, 'val')
     # 1: move from train/val to all if there is existed
     for name in os.listdir(train_folder):
+        name = name + '.h5'
         os.rename(os.path.join(train_folder, name), os.path.join(all_folder, name))
     for name in os.listdir(val_folder):
+        name = name + '.h5'
         os.rename(os.path.join(val_folder, name), os.path.join(all_folder, name))
 
     # 2: move from all to train and val
     for name in train_list:
-        os.rename(os.path.join(all_folder, name), os.path.join(train_folder, name))
+        name = name + '.h5'
+        os.rename(os.path.join(all_folder, name + '.h5'), os.path.join(train_folder, name))
     for name in val_list:
+        name = name + '.h5'
         os.rename(os.path.join(all_folder, name), os.path.join(val_folder, name))
 
 
