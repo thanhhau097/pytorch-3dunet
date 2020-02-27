@@ -20,7 +20,7 @@ def compute_per_channel_dice(input, target, epsilon=1e-6, weight=None):
          weight (torch.Tensor): Cx1 tensor of weight per channel/class
     """
 
-    if input.size() == target.size():  # -> convert to onehot
+    if input.size() != target.size():  # -> convert to onehot
         target = expand_target(target, n_class=input.size()[1])
     # input and target shapes must match
     assert input.size() == target.size(), "'input' and 'target' must have the same shape"
@@ -163,7 +163,7 @@ class GeneralizedDiceLoss(_AbstractDiceLoss):
         self.epsilon = epsilon
 
     def dice(self, input, target, weight):
-        if input.size() == target.size():  # -> convert to onehot
+        if input.size() != target.size():  # -> convert to onehot
             target = expand_target(target, n_class=input.size()[1])
         assert input.size() == target.size(), "'input' and 'target' must have the same shape"
 
