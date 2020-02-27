@@ -1,6 +1,9 @@
 [![DOI](https://zenodo.org/badge/149826542.svg)](https://doi.org/10.1101/2020.01.17.910562)
 [![Build Status](https://travis-ci.com/wolny/pytorch-3dunet.svg?branch=master)](https://travis-ci.com/wolny/pytorch-3dunet)
 
+# TODO
+- Split train/val into k-fold
+- predict code to make submissions (reference: DMF code)
 
 # pytorch-3dunet
 
