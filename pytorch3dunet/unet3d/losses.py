@@ -178,8 +178,8 @@ class GeneralizedDiceLoss(_AbstractDiceLoss):
             input = torch.cat((input, 1 - input), dim=0)
             target = torch.cat((target, 1 - target), dim=0)
 
-        input = input[1:, ...]
-        target = target[1:, ...]
+        # input = input[1:, ...]
+        # target = target[1:, ...]
         # GDL weighting: the contribution of each label is corrected by the inverse of its volume
         w_l = target.sum(-1)
         w_l = 1 / (w_l * w_l).clamp(min=self.epsilon)
