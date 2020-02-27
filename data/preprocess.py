@@ -28,7 +28,7 @@ def read_sub_type(root, image_type='HGG'):
     raw_tails = ['_flair.nii.gz', '_t1.nii.gz', '_t1ce.nii.gz', '_t2.nii.gz']
     label_tail = '_seg.nii.gz'
 
-    for filename in filenames:
+    for filename in tqdm(filenames):
         images = np.stack([np.array(nib_load(os.path.join(root, image_type, filename, filename + tail)), dtype='float32', order='C')
              for tail in raw_tails], -1)
 
@@ -51,12 +51,12 @@ def read_sub_type(root, image_type='HGG'):
         if not os.path.exists(val_folder):
             os.makedirs(val_folder)
 
-        print('--------------')
-        print('file name:', filename)
-        print('images:', images.mean(), images.min(), images.max())
-        print('label:', label.mean(), label.min(), label.max())
+        # print('--------------')
+        # print('file name:', filename)
+        # print('images:', images.mean(), images.min(), images.max())
+        # print('label:', label.mean(), label.min(), label.max())
         # print(raw.shape, label.shape)
-        # save_to_h5(os.path.join(folder, filename + '.h5'), raw, label)
+        save_to_h5(os.path.join(folder, filename + '.h5'), images, label)
 
 
 def nib_load(file_name):
@@ -83,7 +83,7 @@ def process_f32(images):
         x[mask & (x < lower)] = lower
         x[mask & (x > upper)] = upper
 
-        print('y: ', 'mean:', y.mean(), 'std:', y.std(), 'lower:', lower, 'upper:', upper)
+        # print('y: ', 'mean:', y.mean(), 'std:', y.std(), 'lower:', lower, 'upper:', upper)
         y = x[mask]
 
         x -= y.mean()
