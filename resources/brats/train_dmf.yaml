@@ -74,7 +74,7 @@ loaders:
   # when reading from multiple threads.
   dataset: StandardHDF5Dataset
   # batch dimension; if number of GPUs is N > 1, then a batch_size of N * batch_size will automatically be taken for DataParallel
-  batch_size: 6
+  batch_size: 2
   # how many subprocesses to use for data loading
   num_workers: 4
   # path to the raw data within the H5
@@ -141,7 +141,7 @@ loaders:
 #        - name: RandomIntensityChange
         - name: ToTensor
           # do not expand dims for cross-entropy loss
-          expand_dims: false
+          expand_dims: true
           # cross-entropy loss requires target to be of type 'long'
           dtype: 'long'
 
@@ -169,5 +169,5 @@ loaders:
           expand_dims: true
       label:
         - name: ToTensor
-          expand_dims: false
+          expand_dims: true
           dtype: 'long'
