@@ -115,7 +115,7 @@ def split_data(root, train_file, val_file):
     # 2: move from all to train and val
     for name in train_list:
         name = name + '.h5'
-        os.rename(os.path.join(all_folder, name + '.h5'), os.path.join(train_folder, name))
+        os.rename(os.path.join(all_folder, name), os.path.join(train_folder, name))
     for name in val_list:
         name = name + '.h5'
         os.rename(os.path.join(all_folder, name), os.path.join(val_folder, name))
