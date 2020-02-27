@@ -12,6 +12,7 @@ def save_to_h5(path, raw, label):
         f['label'] = label
 
 
+# TODO: change the label from 4 to 3
 def read_sub_type(root, image_type='HGG'):
     filenames = os.listdir(os.path.join(root, image_type))
 
@@ -27,6 +28,7 @@ def read_sub_type(root, image_type='HGG'):
 
         raw = np.array(raw)
         label = nib.load(os.path.join(root, image_type, filename, filename + label_tail)).get_data().astype(np.uint8)
+        label[label == 4] = 3
 
         folder = os.path.join(root, 'h5', image_type)
         if not os.path.exists(folder):
@@ -55,10 +57,10 @@ def list_files(root, kind='train', output='all.txt'):
             f.write('\n')
 
 def main():
-    root = '2018/MICCAI_BraTS_2018_Data_Training'
-    list_files('2018/MICCAI_BraTS_2018_Data_Training')
-    list_files('2018/MICCAI_BraTS_2018_Data_Validation', kind='val', output='val.txt')
-
+    root = './2018/MICCAI_BraTS_2018_Data_Training'
+    read_data(root)
+    # list_files('2018/MICCAI_BraTS_2018_Data_Training')
+    # list_files('2018/MICCAI_BraTS_2018_Data_Validation', kind='val', output='val.txt')
 
 
 if __name__ == '__main__':

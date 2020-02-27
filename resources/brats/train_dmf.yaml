@@ -3,54 +3,54 @@ manual_seed: 0
 # model configuration
 model:
   # model class, e.g. UNet3D, ResidualUNet3D
-  name: UNet3D
+  name: DMFNet
   # number of input channels to the model
-  in_channels: 1
+  c: 4
   # number of output channels
-  out_channels: 2
-  # determines the order of operators in a single layer (gcr - GroupNorm+Conv3d+ReLU)
-  layer_order: gcr
+  num_classes: 4
+  #type of normalization
+  norm: sync_bn
   # feature maps scale factor
-  f_maps: 32
+  channels: 128
   # number of groups in the groupnorm
-  num_groups: 8
-  # apply element-wise nn.Sigmoid after the final 1x1 convolution, otherwise apply nn.Softmax
-  final_sigmoid: false
-  # if True applies the final normalization layer (sigmoid or softmax), otherwise the networks returns the output from the final convolution layer; use False for regression problems, e.g. de-noising
-  is_segmentation: true
+  groups: 16
+#  # apply element-wise nn.Sigmoid after the final 1x1 convolution, otherwise apply nn.Softmax
+#  final_sigmoid: false
+#  # if True applies the final normalization layer (sigmoid or softmax), otherwise the networks returns the output from the final convolution layer; use False for regression problems, e.g. de-noising
+#  is_segmentation: true
 # trainer configuration
 trainer:
   # path to the checkpoint directory
-  checkpoint_dir: 3dunet
+  checkpoint_dir: dmfnet
   # path to latest checkpoint; if provided the training will be resumed from that checkpoint
   resume: null
   # how many iterations between validations
-  validate_after_iters: 20
+  validate_after_iters: 200
   # how many iterations between tensorboard logging
   log_after_iters: 20
   # max number of epochs
-  epochs: 50
+  epochs: 5000
   # max number of iterations
-  iters: 100000
+  iters: 1000000
   # model with higher eval score is considered better
   eval_score_higher_is_better: True
 # optimizer configuration
 optimizer:
   # initial learning rate
-  learning_rate: 0.0002
+  learning_rate: 0.001
   # weight decay
-  weight_decay: 0.0001
+  weight_decay: 0.00001
 # loss function configuration
 loss:
   # loss function to be used during training
-  name: CrossEntropyLoss
+  name: GeneralizedDiceLoss
   # A manual rescaling weight given to each class.
   weight: null
   # a target value that is ignored and does not contribute to the input gradient
   ignore_index: null
 # evaluation metric configuration
 eval_metric:
-  name: MeanIoU
+  name: DiceCoefficient
   # a target label that is ignored during metric evaluation
   ignore_index: null
 # learning rate scheduler configuration
@@ -84,14 +84,14 @@ loaders:
     # absolute paths to the training datasets; if a given path is a directory all H5 files ('*.h5', '*.hdf', '*.hdf5', '*.hd5')
     # inside this this directory will be included as well (non-recursively)
     file_paths:
-      - '../resources/random3D.h5'
+      - '../data/2018/MICCAI_BraTS_2018_Data_Training/h5/HGG/'
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
     slice_builder:
       # SliceBuilder class
       name: SliceBuilder
       # train patch size given to the network (adapt to fit in your GPU mem, generally the bigger patch the better)
-      patch_shape: [32, 64, 64]
+      patch_shape: [128, 128, 128]
       # train stride between patches
       stride_shape: [8, 16, 16]
 
@@ -144,7 +144,7 @@ loaders:
     # paths to the validation datasets; if a given path is a directory all H5 files ('*.h5', '*.hdf', '*.hdf5', '*.hd5')
     # inside this this directory will be included as well (non-recursively)
     file_paths:
-      - '../resources/random3D_copy.h5'
+      - '../data/2018/MICCAI_BraTS_2018_Data_Training/h5/temp/'
 
     # SliceBuilder configuration
     slice_builder:
@@ -164,4 +164,4 @@ loaders:
       label:
         - name: ToTensor
           expand_dims: false
-          dtype: 'int64'
+          dtype: 'long'
