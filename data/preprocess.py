@@ -97,7 +97,7 @@ def split_data(root, train_file, val_file):
 
     with open(val_file, 'r') as f:
         val_list = f.readlines()
-        temp = [name[:-1].split('/')[1] for name in val_list]
+        temp = [name[:-1].split('/')[1] for name in val_list[:-1]]
         val_list = temp + [val_list[-1].split('/')[1]]
 
     # move file from all folder to train and val_folder
