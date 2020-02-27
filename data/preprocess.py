@@ -33,13 +33,15 @@ def read_sub_type(root, image_type='HGG'):
              for tail in raw_tails], -1)
 
         images = np.array(images)
-        images = process_f32(images)  # C x H x W x D
+        images = process_f32(images)  # H x W x D x C
+        # print('org size', images.shape)
         # TODO: transpose images???
-        images = images.transpose(0, 3, 1, 2)  # C x D x H x W
+        images = images.transpose(3, 2, 0, 1)  # C x D x H x W
 
         label = np.array(nib_load(os.path.join(root, image_type, filename, filename + label_tail)),
                          dtype='uint8', order='C')
         label[label == 4] = 3
+        label = label.transpose(2, 0, 1)
 
         folder = os.path.join(root, 'h5', 'all')
         train_folder = os.path.join(root, 'h5', 'train')
@@ -55,7 +57,7 @@ def read_sub_type(root, image_type='HGG'):
         # print('file name:', filename)
         # print('images:', images.mean(), images.min(), images.max())
         # print('label:', label.mean(), label.min(), label.max())
-        # print(raw.shape, label.shape)
+        # print(images.shape, label.shape)
         save_to_h5(os.path.join(folder, filename + '.h5'), images, label)
 
 
