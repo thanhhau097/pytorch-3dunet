@@ -6,6 +6,16 @@ import numpy as np
 from tqdm import tqdm
 
 
+def nib_load(file_name):
+    if not os.path.exists(file_name):
+        return np.array([1])
+
+    proxy = nib.load(file_name)
+    data = proxy.get_data()
+    proxy.uncache()
+    return data
+
+
 def save_to_h5(path, raw, label):
     with h5py.File(path, 'w') as f:
         f['raw'] = raw
@@ -19,15 +29,13 @@ def read_sub_type(root, image_type='HGG'):
     label_tail = '_seg.nii.gz'
 
     for filename in tqdm(filenames):
-        raw = []
-        for tail in raw_tails:
-            path = os.path.join(root, image_type, filename, filename + tail)
-            img = nib.load(path)
-            raw.append(img.get_data().astype(np.float32)) # TODO: convert to int8
+        raw = np.stack([
+            np.array(nib_load(os.path.join(root, image_type, filename, filename + tail)), dtype='float32', order='C')
+            for tail in raw_tails], -1)
 
-        raw = np.array(raw)
         raw = process_f32(raw)
-        label = nib.load(os.path.join(root, image_type, filename, filename + label_tail)).get_data().astype(np.uint8)
+        label = np.array(nib_load(os.path.join(root, image_type, filename, filename + label_tail)),
+                         dtype='uint8', order='C')
         label[label == 4] = 3
 
         folder = os.path.join(root, 'h5', 'all')
