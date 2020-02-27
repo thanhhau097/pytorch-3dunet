@@ -28,14 +28,15 @@ def read_sub_type(root, image_type='HGG'):
     raw_tails = ['_flair.nii.gz', '_t1.nii.gz', '_t1ce.nii.gz', '_t2.nii.gz']
     label_tail = '_seg.nii.gz'
 
-    for filename in tqdm(filenames):
-        raw = []
-        for tail in raw_tails:
-            raw.append(np.array(nib_load(os.path.join(root, image_type, filename, filename + tail)),
-                                dtype='float32', order='C'))
+    for filename in filenames:
+        images = np.stack([np.array(nib_load(os.path.join(root, image_type, filename, filename + tail)), dtype='float32', order='C')
+             for tail in raw_tails], -1)
 
-        raw = np.array(raw)
-        raw = process_f32(raw)
+        images = np.array(images)
+        images = process_f32(images)  # C x H x W x D
+        # TODO: transpose images???
+        images = images.transpose(0, 3, 1, 2)  # C x D x H x W
+
         label = np.array(nib_load(os.path.join(root, image_type, filename, filename + label_tail)),
                          dtype='uint8', order='C')
         label[label == 4] = 3
@@ -50,8 +51,12 @@ def read_sub_type(root, image_type='HGG'):
         if not os.path.exists(val_folder):
             os.makedirs(val_folder)
 
-        print(raw.shape, label.shape)
-        save_to_h5(os.path.join(folder, filename + '.h5'), raw, label)
+        print('--------------')
+        print('file name:', filename)
+        print('images:', images.mean(), images.min(), images.max())
+        print('label:', label.mean(), label.min(), label.max())
+        # print(raw.shape, label.shape)
+        # save_to_h5(os.path.join(folder, filename + '.h5'), raw, label)
 
 
 def nib_load(file_name):
@@ -78,6 +83,7 @@ def process_f32(images):
         x[mask & (x < lower)] = lower
         x[mask & (x > upper)] = upper
 
+        print('y: ', 'mean:', y.mean(), 'std:', y.std(), 'lower:', lower, 'upper:', upper)
         y = x[mask]
 
         x -= y.mean()
@@ -123,12 +129,9 @@ def split_data(root, train_file, val_file):
 
 
 def main():
-    # TODO split dataset for training
     root = '../../data/2018/MICCAI_BraTS_2018_Data_Training'
     read_data(root)
     split_data(os.path.join(root, 'h5'), os.path.join(root, 'train_0.txt'), os.path.join(root, 'valid_0.txt'))
-    # list_files('2018/MICCAI_BraTS_2018_Data_Training')
-    # list_files('2018/MICCAI_BraTS_2018_Data_Validation', kind='val', output='val.txt')
 
 
 if __name__ == '__main__':

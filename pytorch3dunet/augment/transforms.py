@@ -724,7 +724,8 @@ import collections
 #         return 'Identity()'
 
 
-# TODO: change the random state here, because raw and label must match
+# TODO: change the random state here, because raw and label must match, consider support other shape
+# current support: HWDC need to support CDHW
 class RandomIntensityChange(object):
     def __init__(self, random_state, factor=(0.1, 0.1), **kwargs):
         assert random_state is not None, 'RandomState cannot be None'
