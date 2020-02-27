@@ -129,7 +129,7 @@ class DiceLoss(_AbstractDiceLoss):
         return compute_per_channel_dice(input, target, weight=self.weight)
 
 
-# for BRATS
+# TODO: for BRATS
 def expand_target(x, n_class, mode='softmax'):
     """
         Converts NxDxHxW label image to NxCxDxHxW, where each label is stored in a separate channel
@@ -168,8 +168,8 @@ class GeneralizedDiceLoss(_AbstractDiceLoss):
         assert input.size() == target.size(), "'input' and 'target' must have the same shape"
 
         # TODO: ignore background
-        input = flatten(input)[1:]
-        target = flatten(target)[1:]
+        input = flatten(input)
+        target = flatten(target)
         target = target.float()
 
         if input.size(0) == 1:
@@ -178,6 +178,8 @@ class GeneralizedDiceLoss(_AbstractDiceLoss):
             input = torch.cat((input, 1 - input), dim=0)
             target = torch.cat((target, 1 - target), dim=0)
 
+        input = input[1:, ...]
+        target = target[1:, ...]
         # GDL weighting: the contribution of each label is corrected by the inverse of its volume
         w_l = target.sum(-1)
         w_l = 1 / (w_l * w_l).clamp(min=self.epsilon)
