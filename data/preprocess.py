@@ -29,6 +29,10 @@ def read_sub_type(root, image_type='HGG'):
     label_tail = '_seg.nii.gz'
 
     for filename in tqdm(filenames):
+        if 'Brats' not in filename:
+            continue
+        print('--------------')
+        print('file name:', filename)
         images = np.stack([np.array(nib_load(os.path.join(root, image_type, filename, filename + tail)), dtype='float32', order='C')
              for tail in raw_tails], -1)
 
@@ -53,12 +57,11 @@ def read_sub_type(root, image_type='HGG'):
         if not os.path.exists(val_folder):
             os.makedirs(val_folder)
 
-        # print('--------------')
-        # print('file name:', filename)
-        # print('images:', images.mean(), images.min(), images.max())
-        # print('label:', label.mean(), label.min(), label.max())
+
+        print('images:', images.mean(), images.min(), images.max())
+        print('label:', label.mean(), label.min(), label.max())
         # print(images.shape, label.shape)
-        save_to_h5(os.path.join(folder, filename + '.h5'), images, label)
+        # save_to_h5(os.path.join(folder, filename + '.h5'), images, label)
 
 
 def nib_load(file_name):

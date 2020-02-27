@@ -1,11 +1,13 @@
 # use a fixed random seed to guarantee that when you run the code twice you will get the same outcome
 manual_seed: 0
 # model configuration
-model:
+model: # c=4, n=32, channels=128, groups=16, norm='bn', num_classes=4
   # model class, e.g. UNet3D, ResidualUNet3D
   name: DMFNet
   # number of input channels to the model
   c: 4
+  # number of channels of first convolutional layer
+  n: 32
   # number of output channels
   num_classes: 4
   #type of normalization
@@ -48,6 +50,8 @@ loss:
   weight: null
   # a target value that is ignored and does not contribute to the input gradient
   ignore_index: null
+  # apply sigmoid or softmax to input:
+  sigmoid_normalization: False
 # evaluation metric configuration
 eval_metric:
   name: MeanIoU
