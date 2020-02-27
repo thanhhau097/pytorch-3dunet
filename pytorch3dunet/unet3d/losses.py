@@ -167,8 +167,9 @@ class GeneralizedDiceLoss(_AbstractDiceLoss):
             target = expand_target(target, n_class=input.size()[1])
         assert input.size() == target.size(), "'input' and 'target' must have the same shape"
 
-        input = flatten(input)
-        target = flatten(target)
+        # TODO: ignore background
+        input = flatten(input)[1:]
+        target = flatten(target)[1:]
         target = target.float()
 
         if input.size(0) == 1:
