@@ -29,10 +29,12 @@ def read_sub_type(root, image_type='HGG'):
     label_tail = '_seg.nii.gz'
 
     for filename in tqdm(filenames):
-        raw = np.stack([
-            np.array(nib_load(os.path.join(root, image_type, filename, filename + tail)), dtype='float32', order='C')
-            for tail in raw_tails], -1)
+        raw = []
+        for tail in raw_tails:
+            raw.append(np.array(nib_load(os.path.join(root, image_type, filename, filename + tail)),
+                                dtype='float32', order='C'))
 
+        raw = np.array(raw)
         raw = process_f32(raw)
         label = np.array(nib_load(os.path.join(root, image_type, filename, filename + label_tail)),
                          dtype='uint8', order='C')
@@ -48,6 +50,7 @@ def read_sub_type(root, image_type='HGG'):
         if not os.path.exists(val_folder):
             os.makedirs(val_folder)
 
+        print(raw.shape, label.shape)
         save_to_h5(os.path.join(folder, filename + '.h5'), raw, label)
 
 
@@ -122,7 +125,7 @@ def split_data(root, train_file, val_file):
 def main():
     # TODO split dataset for training
     root = '../../data/2018/MICCAI_BraTS_2018_Data_Training'
-    # read_data(root)
+    read_data(root)
     split_data(os.path.join(root, 'h5'), os.path.join(root, 'train_0.txt'), os.path.join(root, 'valid_0.txt'))
     # list_files('2018/MICCAI_BraTS_2018_Data_Training')
     # list_files('2018/MICCAI_BraTS_2018_Data_Validation', kind='val', output='val.txt')
